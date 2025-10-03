@@ -1,45 +1,45 @@
 #include<stdio.h>
 #include<string.h>
 #define MAX 100
-#define FILE_NAME "students.txt"
-struct Student{
+#define FILE_NAME "users.txt"
+struct User{
     int id;
     char name[MAX];
     int age;
 };
-void createStudent(){
-    struct Student s;
+void createUser(){
+    struct User u;
     printf("ID: "); 
-    scanf("%d",&s.id);
+    scanf("%d",&u.id);
     printf("Name: "); 
-    scanf(" %[^\n]",s.name);
+    scanf(" %[^\n]",u.name);
     printf("Age: "); 
-    scanf("%d",&s.age);
+    scanf("%d",&u.age);
     FILE *f=fopen(FILE_NAME,"a");
     if (!f){ 
         printf("Error\n"); 
         return; 
     }
-    fprintf(f,"%d %s %d\n",s.id,s.name,s.age);
+    fprintf(f,"%d %s %d\n",u.id,u.name,u.age);
     fclose(f);
     printf("Added\n");
 }
-void readStudent(){
-    struct Student s;
+void readUser(){
+    struct User u;
     FILE *f=fopen(FILE_NAME,"r");
     if (!f){ 
         printf("No data.\n"); 
         return; 
     }
     printf("\nID\tName\tAge\n");
-    while (fscanf(f,"%d %s %d",&s.id,s.name,&s.age)!=EOF){
-        printf("%d\t%s\t%d\n",s.id,s.name,s.age);
+    while (fscanf(f,"%d %s %d",&u.id,u.name,&u.age)!=EOF){
+        printf("%d\t%s\t%d\n",u.id,u.name,u.age);
     }
     fclose(f);
 }
-void updateStudent(){
+void updateUser(){
     int id,found=0;
-    struct Student s;
+    struct User u;
     FILE *f=fopen(FILE_NAME,"r");
     FILE *temp=fopen("temp.txt","w");
     if (!f){
@@ -48,15 +48,15 @@ void updateStudent(){
     }
     printf("ID to update:"); 
     scanf("%d",&id);
-    while (fscanf(f,"%d %s %d",&s.id,s.name,&s.age)!=EOF){
-        if (s.id==id){
+    while (fscanf(f,"%d %s %d",&u.id,u.name,&u.age)!=EOF){
+        if (u.id==id){
             found=1;
             printf("New Name: "); 
-            scanf(" %[^\n]",s.name);
+            scanf(" %[^\n]",u.name);
             printf("New Age: "); 
-            scanf("%d",&s.age);
+            scanf("%d",&u.age);
         }
-        fprintf(temp,"%d %s %d\n",s.id,s.name,s.age);
+        fprintf(temp,"%d %s %d\n",u.id,u.name,u.age);
     }
     fclose(f); 
     fclose(temp);
@@ -70,9 +70,9 @@ void updateStudent(){
         printf("Not found.\n");
     }
 }
-void deleteStudent(){
+void deleteUser(){
     int id,found=0;
-    struct Student s;
+    struct User u;
     FILE *f=fopen(FILE_NAME,"r");
     FILE *temp=fopen("temp.txt","w");
     if (!f){ 
@@ -81,12 +81,12 @@ void deleteStudent(){
     }
     printf("ID to delete: "); 
     scanf("%d",&id);
-    while (fscanf(f,"%d %s %d",&s.id,s.name,&s.age)!=EOF){
-        if (s.id==id){ 
+    while (fscanf(f,"%d %s %d",&u.id,u.name,&u.age)!=EOF){
+        if (u.id==id){ 
             found = 1; 
             continue; 
         }
-        fprintf(temp,"%d %s %d\n",s.id,s.name,s.age);
+        fprintf(temp,"%d %s %d\n",u.id,u.name,u.age);
     }
     fclose(f); 
     fclose(temp);
@@ -107,16 +107,16 @@ int main(){
         scanf("%d",&choice);
         switch (choice){
             case 1: 
-                createStudent(); 
+                createUser(); 
                 break;
             case 2: 
-                readStudent(); 
+                readUser(); 
                 break;
             case 3: 
-                updateStudent(); 
+                updateUser(); 
                 break;
             case 4: 
-                deleteStudent(); 
+                deleteUser(); 
                 break;
             case 5: 
                 printf("Exiting\n"); 
