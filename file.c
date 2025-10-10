@@ -3,11 +3,13 @@
 #include <stdbool.h>
 const int MAX = 100;
 const char FILE_NAME[] = "users.txt";
+
 struct User {
     int id;
     char name[100];
     int age;
 };
+
 struct User createUser();
 void displayUser(struct User user);
 void displayAllUsers(struct User users[], int count);
@@ -15,6 +17,7 @@ int loadUsers(struct User users[]);
 void saveUsers(struct User users[], int count);
 bool updateUserInMemory(struct User users[], int count, int id);
 bool deleteUserInMemory(struct User users[], int count, int id);
+
 struct User createUser() {
     struct User newUser;
     printf("Enter ID: ");
@@ -25,9 +28,11 @@ struct User createUser() {
     scanf("%d", &newUser.age);
     return newUser;
 }
+
 void displayUser(struct User user) {
     printf("%-5d %-20s %-5d\n", user.id, user.name, user.age);
 }
+
 void displayAllUsers(struct User users[], int count) {
     if (count == 0) {
         printf("No users found.\n");
@@ -39,6 +44,7 @@ void displayAllUsers(struct User users[], int count) {
         displayUser(users[i]);
     }
 }
+
 int loadUsers(struct User users[]) {
     FILE *filePointer = fopen(FILE_NAME, "r");
     if (!filePointer) return 0;
@@ -51,6 +57,7 @@ int loadUsers(struct User users[]) {
     fclose(filePointer);
     return count;
 }
+
 void saveUsers(struct User users[], int count) {
     FILE *filePointer = fopen(FILE_NAME, "w");
     if (!filePointer) {
@@ -63,6 +70,7 @@ void saveUsers(struct User users[], int count) {
     }
     fclose(filePointer);
 }
+
 bool updateUserInMemory(struct User users[], int count, int id) {
     for (int i = 0; i < count; i++) {
         if (users[i].id == id) {
@@ -75,6 +83,7 @@ bool updateUserInMemory(struct User users[], int count, int id) {
     }
     return false;
 }
+
 bool deleteUserInMemory(struct User users[], int count, int id) {
     for (int i = 0; i < count; i++) {
         if (users[i].id == id) {
@@ -86,6 +95,7 @@ bool deleteUserInMemory(struct User users[], int count, int id) {
     }
     return false;
 }
+
 int main() {
     struct User users[100];
     int userCount = 0;
@@ -112,9 +122,11 @@ int main() {
                 printf("User added successfully.\n");
                 break;
             }
+
             case 2:
                 displayAllUsers(users, userCount);
                 break;
+
             case 3: {
                 int idToUpdate;
                 printf("Enter ID to update: ");
@@ -127,6 +139,7 @@ int main() {
                 }
                 break;
             }
+
             case 4: {
                 int idToDelete;
                 printf("Enter ID to delete: ");
@@ -140,9 +153,11 @@ int main() {
                 }
                 break;
             }
+
             case 5:
                 printf("Exiting program...\n");
                 return 0;
+
             default:
                 printf("Invalid choice. Please try again.\n");
         }
