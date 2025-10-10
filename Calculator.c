@@ -1,48 +1,60 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h> 
+#include <stdbool.h>
+#include "stack.h"
+
 const int MAX = 100;
+
+
 int intStack[100];
 int intTop = -1;
+
 void pushInt(int value) {
     intStack[++intTop] = value;
 }
+
 int popInt() {
     return intStack[intTop--];
 }
+
 bool isEmptyInt() {
     return intTop == -1;
 }
+
 char operatorStack[100];
 int operatorTop = -1;
+
 void pushOperator(char operator) {
     operatorStack[++operatorTop] = operator;
 }
+
 char popOperator() {
     return operatorStack[operatorTop--];
 }
+
 char peekOperator() {
     return operatorStack[operatorTop];
 }
+
 bool isEmptyOperator() {
     return operatorTop == -1;
 }
+
 int precedence(char operator) {
     switch (operator) {
         case '+':
-        case '-':
-            return 1;
+        case '-': return 1;
         case '*':
-        case '/':
-            return 2;
-        default:
-            return 0;
+        case '/': return 2;
+        default: return 0;
     }
 }
+
 bool isOperator(char symbol) {
     return (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/');
 }
+
 int infixToPostfix(char *infix, char postfix[][100]) {
     int i = 0, k = 0;
     while (infix[i] != '\0') {
@@ -78,6 +90,7 @@ int infixToPostfix(char *infix, char postfix[][100]) {
     }
     return k;
 }
+
 int evalPostfix(char postfix[][100], int len, int *errorFlag) {
     intTop = -1;
     for (int i = 0; i < len; i++) {
@@ -96,15 +109,9 @@ int evalPostfix(char postfix[][100], int len, int *errorFlag) {
             int b = popInt();
             int a = popInt();
             switch (postfix[i][0]) {
-                case '+':
-                    pushInt(a + b);
-                    break;
-                case '-':
-                    pushInt(a - b);
-                    break;
-                case '*':
-                    pushInt(a * b);
-                    break;
+                case '+': pushInt(a + b); break;
+                case '-': pushInt(a - b); break;
+                case '*': pushInt(a * b); break;
                 case '/':
                     if (b == 0) {
                         *errorFlag = 1;
@@ -118,45 +125,52 @@ int evalPostfix(char postfix[][100], int len, int *errorFlag) {
             }
         }
     }
-
     return popInt();
 }
+
 int main() {
     char infix[100];
     char postfix[100][100];
     int length, errorFlag;
+
     while (true) {
         printf("\nEnter an infix expression (or type 'exit' to quit): ");
         if (!fgets(infix, MAX, stdin)) {
             printf("Error: Invalid input.\n");
             continue;
         }
+
         int len = strlen(infix);
-        if (infix[len - 1] == '\n') {
-            infix[len - 1] = '\0';
-        }
+        if (infix[len - 1] == '\n') infix[len - 1] = '\0';
+
         if (strcmp(infix, "exit") == 0) {
             printf("Exiting program...\n");
             break;
         }
+
         length = infixToPostfix(infix, postfix);
         if (length == -1) {
             printf("Error: Invalid expression.\n");
             continue;
         }
+
         errorFlag = 0;
         int result = evalPostfix(postfix, length, &errorFlag);
+
         switch (errorFlag) {
-            case 1:
-                printf("Error: Division by zero.\n");
+            case 1: 
+                printf("Error: Division by zero.\n"); 
                 break;
-            case 2:
-                printf("Error: Invalid expression.\n");
+
+            case 2: 
+                printf("Error: Invalid expression.\n"); 
                 break;
-            default:
-                printf("Result: %d\n", result);
+
+            default: 
+                printf("Result: %d\n", result); 
                 break;
         }
     }
+
     return 0;
 }
