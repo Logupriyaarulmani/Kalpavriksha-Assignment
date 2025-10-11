@@ -3,43 +3,9 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include "stack.h"
+extern int intTop;
 
 const int MAX = 100;
-
-
-int intStack[100];
-int intTop = -1;
-
-void pushInt(int value) {
-    intStack[++intTop] = value;
-}
-
-int popInt() {
-    return intStack[intTop--];
-}
-
-bool isEmptyInt() {
-    return intTop == -1;
-}
-
-char operatorStack[100];
-int operatorTop = -1;
-
-void pushOperator(char operator) {
-    operatorStack[++operatorTop] = operator;
-}
-
-char popOperator() {
-    return operatorStack[operatorTop--];
-}
-
-char peekOperator() {
-    return operatorStack[operatorTop];
-}
-
-bool isEmptyOperator() {
-    return operatorTop == -1;
-}
 
 int precedence(char operator) {
     switch (operator) {
