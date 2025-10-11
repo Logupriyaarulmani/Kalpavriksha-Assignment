@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "stack.h"
 
+extern int intTop;
+
 const int MAX = 100;
 
 int precedence(char operator) {
