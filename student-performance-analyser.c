@@ -60,7 +60,7 @@ void analysePerformance(grade gradeValue) {
         case B: printf("Performance: ****\n"); break;
         case C: printf("Performance: ***\n"); break;
         case D: printf("Performance: **\n"); break;
-        case F: printf("Performance: *\n"); break;
+        default: break;
     }
 }
 
