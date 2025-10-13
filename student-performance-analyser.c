@@ -10,7 +10,7 @@ typedef struct {
     int marks[3];
     int totalMarks;
     float averageMarks;
-    char gradeLetter;
+    char grade;
 } Student;
 
 typedef enum {
@@ -30,8 +30,8 @@ int calculateTotalMarks(Student student) {
     return total;
 }
 
-float calculateAverageMarks(int totalMarks, int numberOfSubjects) {
-    return totalMarks / (float) numberOfSubjects;
+float calculateAverageMarks(int totalMarks, int subjectCount) {
+    return totalMarks / (float) subjectCount;
 }
 
 Grade calculateGrade(float averageMarks) {
@@ -63,8 +63,8 @@ void displayStudentDetails(Student student) {
     printf("Name: %s\n", student.name);
     printf("Total: %d\n", student.totalMarks);
     printf("Average: %.2f\n", student.averageMarks);
-    printf("Grade: %c\n", student.gradeLetter);
-    if (student.gradeLetter != 'F') {
+    printf("Grade: %c\n", student.grade);
+    if (student.grade != 'F') {
         printStarRating(calculateGrade(student.averageMarks));
     }
 }
@@ -113,8 +113,8 @@ int main() {
         if (!validMarks) continue;
 
         student.totalMarks = calculateTotalMarks(student);
-        student.averageMarks = calculateAverageMarks(student.totalMarks, 3);
-        student.gradeLetter = calculateGrade(student.averageMarks);
+        student.averageMarks = calculateAverageMarks(student.totalMarks, subjectCount);
+        student.grade = calculateGrade(student.averageMarks);
 
         displayStudentDetails(student);
 
