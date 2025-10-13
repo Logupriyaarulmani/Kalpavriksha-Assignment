@@ -13,13 +13,18 @@ typedef struct {
     char gradeLetter;
 } Student;
 
-typedef enum Grade {
-    F, D, C, B, A
-} grade;
+typedef enum {
+    GRADE_A = 'A',
+    GRADE_B = 'B',
+    GRADE_C = 'C',
+    GRADE_D = 'D',
+    GRADE_F = 'F'
+} Grade;
 
 int calculateTotalMarks(Student student) {
     int total = 0;
-    for (int i = 0; i < 3; i++) {
+    int subjectCount = sizeof(student.marks) / sizeof(student.marks[0]);
+    for (int i = 0; i < subjectCount; i++) {
         total += student.marks[i];
     }
     return total;
@@ -29,37 +34,26 @@ float calculateAverageMarks(int totalMarks, int numberOfSubjects) {
     return totalMarks / (float) numberOfSubjects;
 }
 
-grade calculateGrade(float averageMarks) {
+Grade calculateGrade(float averageMarks) {
     if (averageMarks >= 85) {
-        return A;
+        return GRADE_A;
     } else if (averageMarks >= 70) {
-        return B;
+        return GRADE_B;
     } else if (averageMarks >= 50) {
-        return C;
+        return GRADE_C;
     } else if (averageMarks >= 35) {
-        return D;
+        return GRADE_D;
     } else {
-        return F;
+        return GRADE_F;
     }
 }
 
-char getGradeLetter(grade currentGrade) {
-    switch (currentGrade) {
-        case A: return 'A';
-        case B: return 'B';
-        case C: return 'C';
-        case D: return 'D';
-        case F: return 'F';
-        default: return 'N';
-    }
-}
-
-void analysePerformance(grade gradeValue) {
+void printStarRating(Grade gradeValue) {
     switch (gradeValue) {
-        case A: printf("Performance: *****\n"); break;
-        case B: printf("Performance: ****\n"); break;
-        case C: printf("Performance: ***\n"); break;
-        case D: printf("Performance: **\n"); break;
+        case GRADE_A: printf("Performance: *****\n"); break;
+        case GRADE_B: printf("Performance: ****\n"); break;
+        case GRADE_C: printf("Performance: ***\n"); break;
+        case GRADE_D: printf("Performance: **\n"); break;
         default: break;
     }
 }
@@ -71,7 +65,7 @@ void displayStudentDetails(Student student) {
     printf("Average: %.2f\n", student.averageMarks);
     printf("Grade: %c\n", student.gradeLetter);
     if (student.gradeLetter != 'F') {
-        analysePerformance(calculateGrade(student.averageMarks));
+        printStarRating(calculateGrade(student.averageMarks));
     }
 }
 
@@ -107,7 +101,8 @@ int main() {
         }
 
         bool validMarks = true;
-        for (int j = 0; j < 3; j++) {
+        int subjectCount = sizeof(student.marks) / sizeof(student.marks[0]);
+        for (int j = 0; j < subjectCount; j++){
             if (!isValidMark(student.marks[j])) {
                 printf("Invalid mark %d for student %d\n", student.marks[j], i + 1);
                 validMarks = false;
@@ -119,8 +114,7 @@ int main() {
 
         student.totalMarks = calculateTotalMarks(student);
         student.averageMarks = calculateAverageMarks(student.totalMarks, 3);
-        grade g = calculateGrade(student.averageMarks);
-        student.gradeLetter = getGradeLetter(g);
+        student.gradeLetter = calculateGrade(student.averageMarks);
 
         displayStudentDetails(student);
 
