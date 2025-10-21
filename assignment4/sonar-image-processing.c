@@ -3,13 +3,14 @@
 #include <time.h>
 #include <stdbool.h>
 
+const int minimumIntensity = 0;
+const int maximumIntensity = 255;
+
 void generateSonarMatrix(int noOfRows, int *sonarMatrix){
     srand(time(NULL));
-    int minimumValue = 0;
-    int maximumValue = 255;
     for (int i = 0; i < noOfRows; i++){
         for (int j = 0; j < noOfRows; j++){
-            sonarMatrix[i * noOfRows + j] = rand() % (maximumValue - minimumValue + 1) + minimumValue;
+            sonarMatrix[i * noOfRows + j] = rand() % (maximumIntensity - minimumIntensity + 1) + minimumIntensity;
         }
     }
 }
@@ -44,39 +45,51 @@ void rotateMatrix90Clockwise(int noOfRows, int *matrix){
     }
 }
 
-void apply3x3SmoothingFilter(int noOfRows, int *sonarMatrix) {
-    int *tempMatrix = (int*) malloc(noOfRows * noOfRows * sizeof(int));
-    if (!tempMatrix) {
-        printf("Memory allocation failed\n");
-        return;
-    }
+int calculateAverageForCell (int *sonarMatrix, int noOfRows, int row, int column) {
+    int sum = 0;
+    int count = 0;
+    for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+        int neighborRow = row + rowOffset;
+        if (neighborRow < 0 || neighborRow >= noOfRows) continue;
 
-    for (int row = 0; row < noOfRows; row++) {
-        for (int col = 0; col < noOfRows; col++) {
-            int sum = 0, neighborCount = 0;
-
-            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
-                int neighborRow = row + rowOffset;
-                if (neighborRow < 0 || neighborRow >= noOfRows) continue;
-
-                for (int colOffset = -1; colOffset <= 1; colOffset++) {
-                    int neighborCol = col + colOffset;
-                    if (neighborCol < 0 || neighborCol >= noOfRows) continue;
-
-                    sum += *(sonarMatrix + neighborRow * noOfRows + neighborCol);
-                    neighborCount++;
-                }
-            }
-
-            *(tempMatrix + row * noOfRows + col) = sum / neighborCount;
+        for (int colOffset = -1; colOffset <= 1; colOffset++) {
+            int neighborCol = column + colOffset;
+            if (neighborCol < 0 || neighborCol >= noOfRows) continue;
+    
+            sum += *(sonarMatrix + neighborRow * noOfRows + neighborCol);
+            count++;
         }
     }
+    return sum / count;
+}
 
-    for (int i = 0; i < noOfRows * noOfRows; i++) {
-        *(sonarMatrix + i) = *(tempMatrix + i);
+void apply3x3SmoothingFilter(int noOfRows, int *sonarMatrix) {
+    int *prevRow = NULL;
+
+    for (int i = 0; i < noOfRows; i++) {
+        int *tempRow = (int*) malloc(noOfRows * sizeof(int));
+        if (!tempRow) {
+            printf("Memory allocation failed\n");
+            free(prevRow);
+            return;
+        }
+        
+        for (int j = 0; j < noOfRows; j++) {
+            tempRow[j] = calculateAverageForCell(sonarMatrix, noOfRows, i, j);
+        }
+
+        if (i > 0) {
+            for (int j = 0; j < noOfRows; j++)
+                *(sonarMatrix + (i - 1) * noOfRows + j) = prevRow[j];
+            free(prevRow);
+        }
+
+        prevRow = tempRow;
     }
 
-    free(tempMatrix);
+    for (int j = 0; j < noOfRows; j++)
+        *(sonarMatrix + (noOfRows - 1) * noOfRows + j) = prevRow[j];
+    free(prevRow);
 }
 
 bool isValidNoOfRows (int noOfRows){
@@ -98,8 +111,7 @@ int main() {
         return 0;
     }
 
-    int noOfColumns = noOfRows;
-    int *sonarMatrix = (int*) malloc(noOfRows * noOfColumns * sizeof(int));
+    int *sonarMatrix = (int*) malloc(noOfRows * noOfRows * sizeof(int));
     if (sonarMatrix == NULL){
         printf("Memory allocation failed\n");
         return 0;
