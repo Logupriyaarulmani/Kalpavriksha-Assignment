@@ -15,7 +15,6 @@ int main() {
             break;
         }
         processCommand(line);
-        free(line);
     }
 
     return 0;

@@ -38,4 +38,7 @@ FileNode* findChild(FileNode *parent, const char *name);
 int unlinkChildNode(FileNode *parent, FileNode *node);
 void freeFileSystem(FileNode *node);
 
+extern FileNode *root;
+extern FileNode *currentDirectory;
+
 #endif

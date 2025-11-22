@@ -6,18 +6,18 @@
 #include <stdio.h>
 #include <string.h>
 
-extern FreeBlock *freeBlockListHead;
-extern FreeBlock *freeBlockListTail;
+static FreeBlock *freeBlockListHead;
+static FreeBlock *freeBlockListTail;
 static int freeBlockCount = 0;
 
 void initializeFreeBlockList() {
     freeBlockListHead = freeBlockListTail = NULL;
     freeBlockCount = 0;
-    for (int index = 0; index < NUMBER_OF_BLOCKS; ++index) {
+    for (int index = 0; index < NUMBER_OF_BLOCKS; index++) {
         FreeBlock *newBlock = (FreeBlock*)malloc(sizeof(FreeBlock));
         if (!newBlock) {
-            perror("malloc");
-            exit(1);
+            printf("Memory allocation failed.\n");
+            break;
         }
         newBlock->index = index;
         newBlock->next = NULL;
@@ -38,6 +38,7 @@ int popFreeBlockHead() {
     if (freeBlockListHead == NULL) {
         return -1;
     }
+
     int index = freeBlockListHead->index;
     FreeBlock *node = freeBlockListHead;
     freeBlockListHead = freeBlockListHead->next;
@@ -46,6 +47,7 @@ int popFreeBlockHead() {
     } else {
         freeBlockListTail = NULL;
     }
+
     free(node);
     freeBlockCount--;
     return index;
@@ -55,20 +57,24 @@ void pushFreeBlockTail(int index) {
     if (index < 0 || index >= NUMBER_OF_BLOCKS) {
         return;
     }
+
     FreeBlock *newBlock = (FreeBlock*)malloc(sizeof(FreeBlock));
     if (!newBlock) {
         printf("Memory allocation failed.\n");
         return;
     }
+
     newBlock->index = index;
     newBlock->next = NULL;
     newBlock->prev = freeBlockListTail;
     if (!freeBlockListHead) {
         freeBlockListHead = newBlock;
     }
+
     if (freeBlockListTail) {
         freeBlockListTail->next = newBlock;
     }
+
     freeBlockListTail = newBlock;
     freeBlockCount++;
 }
@@ -83,6 +89,7 @@ void freeFreeBlockList() {
         freeBlockListHead = freeBlockListHead->next;
         free(n);
     }
+
     freeBlockListTail = NULL;
     freeBlockCount = 0;
 }
@@ -90,9 +97,10 @@ void freeFreeBlockList() {
 FileNode* createFileNode(const char *name, bool isDirectory, FileNode *parent) {
     FileNode *newNode = (FileNode*)malloc(sizeof(FileNode));
     if (!newNode) {
-        perror("malloc");
+        printf("Memory allocation failed.\n");
         exit(1);
     }
+
     memset(newNode, 0, sizeof(*newNode));
     strncpy(newNode->name, name ? name : "", MAX_NAME - 1);
     newNode->name[MAX_NAME - 1] = '\0';
@@ -111,7 +119,8 @@ void insertChild(FileNode *parent, FileNode *newNode) {
         parent->child = newNode;
         newNode->next = newNode;
         newNode->prev = newNode;
-    } else {
+    } 
+    else {
         FileNode *head = parent->child;
         FileNode *tail = head->prev;
 
@@ -123,9 +132,9 @@ void insertChild(FileNode *parent, FileNode *newNode) {
     }
 }
 
-
 FileNode* findChild(FileNode *parent, const char *name) {
     if (!parent || !parent->child || !name) return NULL;
+
     FileNode *cur = parent->child;
     do {
         if (strcmp(cur->name, name) == 0) {
@@ -136,9 +145,9 @@ FileNode* findChild(FileNode *parent, const char *name) {
     return NULL;
 }
 
-
 int unlinkChildNode(FileNode *parent, FileNode *node) {
     if (!parent || !node || !parent->child) return 0;
+
     FileNode *cur = parent->child;
     do {
         if (cur == node) {
@@ -161,11 +170,13 @@ int unlinkChildNode(FileNode *parent, FileNode *node) {
 
 void freeFileSystem(FileNode *node) {
     if (!node) return;
+
     while (node->isDirectory && node->child) {
         FileNode *child = node->child;
         unlinkChildNode(node, child);
         freeFileSystem(child);
     }
+    
     if (!node->isDirectory && node->blockPointers) {
         for (int i = 0; i < node->dynamicBlocksCount; i++) {
             int blk = node->blockPointers[i];

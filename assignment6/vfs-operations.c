@@ -6,30 +6,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-FileNode *root = NULL;
-FileNode *currentDirectory = NULL;
-
 unsigned char virtualDisk[NUMBER_OF_BLOCKS][BLOCK_SIZE];
+int freeBlockOfFile(FileNode *file);
 
 void mkdirCommand(const char *name) {
-    FileNode *newDir = createNode(name, 1);
-    newDir->parent = currentDirectory;
-
-    if (!currentDirectory->child) {
-        currentDirectory->child = newDir;
-        newDir->next = newDir;
-        newDir->prev = newDir;
-    } else {
-        FileNode *head = currentDirectory->child;
-        FileNode *tail = head->prev;
-
-        tail->next = newDir;
-        newDir->prev = tail;
-
-        newDir->next = head;
-        head->prev = newDir;
+    if (name == NULL) {
+        printf("mkdir: missing operand\n");
+        return;
     }
 
+    if (is_bad_name(name)) {
+        printf("mkdir: invalid name\n");
+        return;
+    }
+
+    if (findChild(currentDirectory, name) != NULL) {
+        printf("mkdir: cannot create directory '%s': File exists\n", name);
+        return;
+    }
+
+    FileNode *newDirectory = createFileNode(name, true, currentDirectory);
+    insertChild(currentDirectory, newDirectory);
     printf("Directory '%s' created successfully.\n", name);
 }
 

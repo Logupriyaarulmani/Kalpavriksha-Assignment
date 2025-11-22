@@ -4,6 +4,9 @@
 #include "linkedList-behaviour.h"
 #include "utils.h"
 
+extern FileNode *root;
+extern FileNode *currentDirectory;
+
 void mkdirCommand(const char *name);
 void createCommand(const char *name);
 void writeCommand(const char *filename, const char *data);

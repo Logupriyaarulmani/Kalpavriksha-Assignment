@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
-static FileNode *root = NULL;
-static FileNode *currentDirectory = NULL;
+FileNode *root = NULL;
+FileNode *currentDirectory = NULL;
 
 void initializeRootDirectory(void) {
     root = createFileNode("", true, NULL);
@@ -22,8 +22,10 @@ void initializeFileSystem(void) {
 }
 
 int freeBlockOfFile(FileNode *file) {
-    if (!file || file->isDirectory || file->blockPointers == NULL)
+    if (!file || file->isDirectory || file->blockPointers == NULL) {
         return 0;
+    }
+
     int freed = 0;
     for (int i = 0; i < file->dynamicBlocksCount; ++i) {
         int b = file->blockPointers[i];
@@ -32,6 +34,7 @@ int freeBlockOfFile(FileNode *file) {
             freed++;
         }
     }
+
     free(file->blockPointers);
     file->blockPointers = NULL;
     file->dynamicBlocksCount = 0;
@@ -75,8 +78,10 @@ static void decodeEscapesInPlace(char *text) {
 }
 
 void extractWriteContent(const char *inputText, char *outputText, int outputSize) {
-    while (*inputText == ' ' || *inputText == '\t')
+    while (*inputText == ' ' || *inputText == '\t') {
         inputText++;
+    }
+
     if (*inputText == '\"') {
         inputText++;
         int outi = 0;
@@ -90,7 +95,8 @@ void extractWriteContent(const char *inputText, char *outputText, int outputSize
         }
         outputText[outi] = '\0';
         decodeEscapesInPlace(outputText);
-    } else {
+    } 
+    else {
         strncpy(outputText, inputText, outputSize - 1);
         outputText[outputSize - 1] = '\0';
         decodeEscapesInPlace(outputText);
@@ -99,25 +105,31 @@ void extractWriteContent(const char *inputText, char *outputText, int outputSize
 
 void processCommand(char *line) {
     if (!line) return;
+
     line[strcspn(line, "\r\n")] = '\0';
     char *cmd = strtok(line, " \t\r\n");
+
     if (!cmd) return;
 
     if (strcmp(cmd, "mkdir") == 0) {
         char *arg = strtok(NULL, " \t\n");
         mkdirCommand(arg);
-    } else if (strcmp(cmd, "ls") == 0) {
+    } 
+    else if (strcmp(cmd, "ls") == 0) {
         lsCommand();
-    } else if (strcmp(cmd, "cd") == 0) {
+    } 
+    else if (strcmp(cmd, "cd") == 0) {
         char *arg = strtok(NULL, " \t\n");
         if (arg)
             cdCommand(arg);
         else
             printf("cd: missing operand\n");
-    } else if (strcmp(cmd, "create") == 0) {
+    } 
+    else if (strcmp(cmd, "create") == 0) {
         char *arg = strtok(NULL, " \t\n");
         createCommand(arg);
-    } else if (strcmp(cmd, "write") == 0) {
+    } 
+    else if (strcmp(cmd, "write") == 0) {
         char *filename = strtok(NULL, " \t\n");
         char *data = strtok(NULL, "\n");
         if (filename && data) {
@@ -126,22 +138,29 @@ void processCommand(char *line) {
             writeCommand(filename, content);
         } else
             printf("write: missing operand\n");
-    } else if (strcmp(cmd, "read") == 0) {
+    } 
+    else if (strcmp(cmd, "read") == 0) {
         char *arg = strtok(NULL, " \t\n");
         readCommand(arg);
-    } else if (strcmp(cmd, "delete") == 0) {
+    } 
+    else if (strcmp(cmd, "delete") == 0) {
         char *arg = strtok(NULL, " \t\n");
         deleteCommand(arg);
-    } else if (strcmp(cmd, "rmdir") == 0) {
+    } 
+    else if (strcmp(cmd, "rmdir") == 0) {
         char *arg = strtok(NULL, " \t\n");
         rmdirCommand(arg);
-    } else if (strcmp(cmd, "pwd") == 0) {
+    } 
+    else if (strcmp(cmd, "pwd") == 0) {
         pwdCommand();
-    } else if (strcmp(cmd, "df") == 0) {
+    } 
+    else if (strcmp(cmd, "df") == 0) {
         dfCommand();
-    } else if (strcmp(cmd, "exit") == 0) {
+    } 
+    else if (strcmp(cmd, "exit") == 0) {
         exitCommand();
-    } else {
+    } 
+    else {
         printf("Invalid command!\n");
     }
 }
