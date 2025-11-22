@@ -2,9 +2,7 @@
 #define VFS_OPERATIONS_H
 
 #include "linkedList-behaviour.h"
-
-void initializeRootDirectory(void);
-void initializeFileSystem(void);
+#include "utils.h"
 
 void mkdirCommand(const char *name);
 void createCommand(const char *name);
@@ -18,6 +16,4 @@ void pwdCommand(void);
 void dfCommand(void);
 void exitCommand(void);
 
-void processCommand(char *line);
-
-#endif /* VFS_OPERATIONS_H */
+#endif

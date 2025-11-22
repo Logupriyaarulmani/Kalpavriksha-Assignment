@@ -16,12 +16,11 @@ typedef struct FreeBlock {
 
 typedef struct FileNode {
     char name[MAX_NAME];
-    bool isDirectory; 
+    bool isDirectory;
     struct FileNode *next;
     struct FileNode *prev;
     struct FileNode *parent;
     struct FileNode *child;
-
     int *blockPointers;
     int dynamicBlocksCount;
     int fileSize;
@@ -39,9 +38,4 @@ FileNode* findChild(FileNode *parent, const char *name);
 int unlinkChildNode(FileNode *parent, FileNode *node);
 void freeFileSystem(FileNode *node);
 
-int rightTrim(char *str);
-int leftTrim(char *str);
-int freeBlockOfFile(FileNode *file);
-int is_bad_name(const char *name);
-
-#endif /* LINKEDLIST_BEHAVIOUR_H */
+#endif
