@@ -14,6 +14,12 @@ typedef struct FreeBlock {
     struct FreeBlock *prev;
 } FreeBlock;
 
+typedef struct {
+    FreeBlock *head;
+    FreeBlock *tail;
+    int count;
+} FreeBlockList;
+
 typedef struct FileNode {
     char name[MAX_NAME];
     bool isDirectory;
@@ -26,19 +32,18 @@ typedef struct FileNode {
     int fileSize;
 } FileNode;
 
-void initializeFreeBlockList(void);
-int popFreeBlockHead(void);
-void pushFreeBlockTail(int index);
-int countFreeBlocks(void);
-void freeFreeBlockList(void);
+extern FreeBlockList *freeBlockList;
+
+void initializeFreeBlockList(FreeBlockList *list);
+int popFreeBlockHead(FreeBlockList *list);
+void pushFreeBlockTail(FreeBlockList *list, int index);
+int countFreeBlocks(FreeBlockList *list);
+void freeFreeBlockList(FreeBlockList *list);
 
 FileNode* createFileNode(const char *name, bool isDirectory, FileNode *parent);
 void insertChild(FileNode *parent, FileNode *child);
 FileNode* findChild(FileNode *parent, const char *name);
 int unlinkChildNode(FileNode *parent, FileNode *node);
-void freeFileSystem(FileNode *node);
-
-extern FileNode *root;
-extern FileNode *currentDirectory;
+void freeFileSystem(FileNode *node, FreeBlockList *list);
 
 #endif

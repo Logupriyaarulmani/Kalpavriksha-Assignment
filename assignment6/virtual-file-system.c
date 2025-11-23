@@ -6,6 +6,9 @@
 #include "utils.h"
 
 int main() {
+    FileNode *root = NULL;
+    FileNode *currentDirectory = NULL;
+
     initializeFileSystem();
 
     char line[MAX_LINE];

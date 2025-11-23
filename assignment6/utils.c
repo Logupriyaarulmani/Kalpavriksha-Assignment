@@ -5,19 +5,16 @@
 #include <stdio.h>
 #include <string.h>
 
-FileNode *root = NULL;
-FileNode *currentDirectory = NULL;
-
-void initializeRootDirectory(void) {
-    root = createFileNode("", true, NULL);
-    root->next = root->prev = root;
-    root->child = NULL;
-    currentDirectory = root;
+void initializeRootDirectory(FileNode **root, FileNode **currentDirectory) {
+    *root = createFileNode("", true, NULL);
+    (*root)->next = (*root)->prev = *root;
+    (*root)->child = NULL;
+    *currentDirectory = *root;
 }
 
-void initializeFileSystem(void) {
-    initializeFreeBlockList();
-    initializeRootDirectory();
+void initializeFileSystem(FileNode **root, FileNode **currentDirectory) {
+    initializeFreeBlockList(freeBlockList);
+    initializeRootDirectory(root, currentDirectory);
     printf("Compact VFS - ready. Type 'exit' to quit.\n");
 }
 
@@ -28,9 +25,9 @@ int freeBlockOfFile(FileNode *file) {
 
     int freed = 0;
     for (int i = 0; i < file->dynamicBlocksCount; ++i) {
-        int b = file->blockPointers[i];
-        if (b >= 0) {
-            pushFreeBlockTail(b);
+        int blockTobeFreed = file->blockPointers[i];
+        if (blockTobeFreed >= 0) {
+            pushFreeBlockTail(freeBlockList, blockTobeFreed);
             freed++;
         }
     }
@@ -103,7 +100,7 @@ void extractWriteContent(const char *inputText, char *outputText, int outputSize
     }
 }
 
-void processCommand(char *line) {
+void processCommand(char *line, FileNode **root, FileNode **currentDirectory) {
     if (!line) return;
 
     line[strcspn(line, "\r\n")] = '\0';
@@ -135,7 +132,7 @@ void processCommand(char *line) {
         if (filename && data) {
             char content[MAX_LINE];
             extractWriteContent(data, content, sizeof(content));
-            writeCommand(filename, content);
+            writeCommand(filename, content, *currentDirectory);
         } else
             printf("write: missing operand\n");
     } 

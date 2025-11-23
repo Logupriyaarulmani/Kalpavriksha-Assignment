@@ -65,8 +65,6 @@ void writeCommand(const char *filename, const char *data) {
         return;
     }
 
-    if (!data) data = "";
-
     int addBytes = (int)strlen(data);
     int currentSize = targetFile->fileSize;
 
@@ -78,10 +76,9 @@ void writeCommand(const char *filename, const char *data) {
 
     int requiredBlocks = (totalSize + BLOCK_SIZE - 1) / BLOCK_SIZE;
     int extraBlocks = (requiredBlocks > currentBlocks)
-                        ? requiredBlocks - currentBlocks
-                        : 0;
+                        ? requiredBlocks - currentBlocks : 0;
 
-    if (extraBlocks > countFreeBlocks()) {
+    if (extraBlocks > countFreeBlocks(freeBlockList)) {
         printf("Disk full! Cannot write data.\n");
         return;
     }
@@ -114,7 +111,7 @@ void writeCommand(const char *filename, const char *data) {
     }
 
     for (int i = currentBlocks; i < requiredBlocks; i++) {
-        int idx = popFreeBlockHead();
+        int idx = popFreeBlockHead(freeBlockList);
         if (idx == -1) {
             printf("Disk full! Cannot write data.\n");
             return;
@@ -296,7 +293,7 @@ void pwdCommand(void) {
 }
 
 void dfCommand(void) {
-    int freeBlocks = countFreeBlocks();
+    int freeBlocks = countFreeBlocks(freeBlockList);
     int usedBlocks = NUMBER_OF_BLOCKS - freeBlocks;
     double usagePercent = ((double)usedBlocks / NUMBER_OF_BLOCKS) * 100.0;
     printf("Total Blocks: %d\n", NUMBER_OF_BLOCKS);
@@ -307,7 +304,7 @@ void dfCommand(void) {
 
 void exitCommand(void) {
     freeFileSystem(root);
-    freeFreeBlockList();
+    freeFreeBlockList(freeBlockList);
     printf("Memory released. Exiting program...\n");
     exit(0);
 }

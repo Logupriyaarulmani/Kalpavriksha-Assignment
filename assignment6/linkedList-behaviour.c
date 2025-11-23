@@ -6,59 +6,64 @@
 #include <stdio.h>
 #include <string.h>
 
-static FreeBlock *freeBlockListHead;
-static FreeBlock *freeBlockListTail;
-static int freeBlockCount = 0;
+FreeBlockList *freeBlockList = NULL;
 
-void initializeFreeBlockList() {
-    freeBlockListHead = freeBlockListTail = NULL;
-    freeBlockCount = 0;
+FreeBlockList* initializeFreeBlockList() {
+    FreeBlockList *list = (FreeBlockList*)malloc(sizeof(FreeBlockList));
+    if (!list) {
+        printf("Memory allocation failed.\n");
+        return NULL;
+    }
+
+    list->head = list->tail = NULL;
+    list->count = 0;
     for (int index = 0; index < NUMBER_OF_BLOCKS; index++) {
-        FreeBlock *newBlock = (FreeBlock*)malloc(sizeof(FreeBlock));
+        FreeBlock *newBlock = malloc(sizeof(FreeBlock));
         if (!newBlock) {
             printf("Memory allocation failed.\n");
             break;
         }
         newBlock->index = index;
         newBlock->next = NULL;
-        newBlock->prev = freeBlockListTail;
+        newBlock->prev = list->tail;
 
-        if (!freeBlockListHead) {
-            freeBlockListHead = newBlock;
+        if (!list->head) {
+            list->head = newBlock;
         }
-        if (freeBlockListTail) {
-            freeBlockListTail->next = newBlock;
+        if (list->tail) {
+            list->tail->next = newBlock;
         }
-        freeBlockListTail = newBlock;
-        freeBlockCount++;
+        list->tail = newBlock;
+        list->count++;
     }
+    return list;
 }
 
-int popFreeBlockHead() {
-    if (freeBlockListHead == NULL) {
+int popFreeBlockHead(FreeBlockList *list) {
+    if (list->head == NULL) {
         return -1;
     }
 
-    int index = freeBlockListHead->index;
-    FreeBlock *node = freeBlockListHead;
-    freeBlockListHead = freeBlockListHead->next;
-    if (freeBlockListHead) {
-        freeBlockListHead->prev = NULL;
+    int index = list->head->index;
+    FreeBlock *node = list->head;
+    list->head = list->head->next;
+    if (list->head) {
+        list->head->prev = NULL;
     } else {
-        freeBlockListTail = NULL;
+        list->tail = NULL;
     }
 
     free(node);
-    freeBlockCount--;
+    list->count--;
     return index;
 }
 
-void pushFreeBlockTail(int index) {
+void pushFreeBlockTail(FreeBlockList *list, int index) {
     if (index < 0 || index >= NUMBER_OF_BLOCKS) {
         return;
     }
 
-    FreeBlock *newBlock = (FreeBlock*)malloc(sizeof(FreeBlock));
+    FreeBlock *newBlock = malloc(sizeof(FreeBlock));
     if (!newBlock) {
         printf("Memory allocation failed.\n");
         return;
@@ -66,36 +71,36 @@ void pushFreeBlockTail(int index) {
 
     newBlock->index = index;
     newBlock->next = NULL;
-    newBlock->prev = freeBlockListTail;
-    if (!freeBlockListHead) {
-        freeBlockListHead = newBlock;
+    newBlock->prev = list->tail;
+    if (!list->head) {
+        list->head = newBlock;
     }
 
-    if (freeBlockListTail) {
-        freeBlockListTail->next = newBlock;
+    if (list->tail) {
+        list->tail->next = newBlock;
     }
 
-    freeBlockListTail = newBlock;
-    freeBlockCount++;
+    list->tail = newBlock;
+    list->count++;
 }
 
-int countFreeBlocks() {
-    return freeBlockCount;
+int countFreeBlocks(FreeBlockList *list) {
+    return list->count;
 }
 
-void freeFreeBlockList() {
-    while (freeBlockListHead) {
-        FreeBlock *n = freeBlockListHead;
-        freeBlockListHead = freeBlockListHead->next;
+void freeFreeBlockList(FreeBlockList *list) {
+    while (list->head) {
+        FreeBlock *n = list->head;
+        list->head = list->head->next;
         free(n);
     }
 
-    freeBlockListTail = NULL;
-    freeBlockCount = 0;
+    list->tail = NULL;
+    list->count = 0;
 }
 
 FileNode* createFileNode(const char *name, bool isDirectory, FileNode *parent) {
-    FileNode *newNode = (FileNode*)malloc(sizeof(FileNode));
+    FileNode *newNode = malloc(sizeof(FileNode));
     if (!newNode) {
         printf("Memory allocation failed.\n");
         exit(1);
@@ -168,20 +173,20 @@ int unlinkChildNode(FileNode *parent, FileNode *node) {
     return 0;
 }
 
-void freeFileSystem(FileNode *node) {
+void freeFileSystem(FileNode *node, FreeBlockList *list) {
     if (!node) return;
 
     while (node->isDirectory && node->child) {
         FileNode *child = node->child;
         unlinkChildNode(node, child);
-        freeFileSystem(child);
+        freeFileSystem(child, list);
     }
     
     if (!node->isDirectory && node->blockPointers) {
         for (int i = 0; i < node->dynamicBlocksCount; i++) {
             int blk = node->blockPointers[i];
             if (blk >= 0) {
-                pushFreeBlockTail(blk);
+                pushFreeBlockTail(list, blk);
             }
         }
         free(node->blockPointers);
