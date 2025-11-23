@@ -9,7 +9,7 @@
 FreeBlockList *freeBlockList = NULL;
 
 FreeBlockList* initializeFreeBlockList() {
-    FreeBlockList *list = (FreeBlockList*)malloc(sizeof(FreeBlockList));
+    FreeBlockList *list = malloc(sizeof(FreeBlockList));
     if (!list) {
         printf("Memory allocation failed.\n");
         return NULL;
