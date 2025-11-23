@@ -151,7 +151,8 @@ FileNode* findChild(FileNode *parent, const char *name) {
 }
 
 int unlinkChildNode(FileNode *parent, FileNode *node) {
-    if (!parent || !node || !parent->child) return 0;
+    if (!parent || !node || !parent->child) 
+        return 0;
 
     FileNode *cur = parent->child;
     do {

@@ -13,7 +13,7 @@ void initializeRootDirectory(FileNode **root, FileNode **currentDirectory) {
 }
 
 void initializeFileSystem(FileNode **root, FileNode **currentDirectory) {
-    initializeFreeBlockList(freeBlockList);
+    initializeFreeBlockList();
     initializeRootDirectory(root, currentDirectory);
     printf("Compact VFS - ready. Type 'exit' to quit.\n");
 }
@@ -110,21 +110,21 @@ void processCommand(char *line, FileNode **root, FileNode **currentDirectory) {
 
     if (strcmp(cmd, "mkdir") == 0) {
         char *arg = strtok(NULL, " \t\n");
-        mkdirCommand(arg);
+        mkdirCommand(*currentDirectory, arg);
     } 
     else if (strcmp(cmd, "ls") == 0) {
-        lsCommand();
+        lsCommand(*currentDirectory);
     } 
     else if (strcmp(cmd, "cd") == 0) {
         char *arg = strtok(NULL, " \t\n");
         if (arg)
-            cdCommand(arg);
+            cdCommand(currentDirectory, arg, *root);
         else
             printf("cd: missing operand\n");
     } 
     else if (strcmp(cmd, "create") == 0) {
         char *arg = strtok(NULL, " \t\n");
-        createCommand(arg);
+        createCommand(*currentDirectory, arg);
     } 
     else if (strcmp(cmd, "write") == 0) {
         char *filename = strtok(NULL, " \t\n");
@@ -132,30 +132,35 @@ void processCommand(char *line, FileNode **root, FileNode **currentDirectory) {
         if (filename && data) {
             char content[MAX_LINE];
             extractWriteContent(data, content, sizeof(content));
-            writeCommand(filename, content, *currentDirectory);
+            writeCommand(*currentDirectory, filename, content);
         } else
             printf("write: missing operand\n");
     } 
     else if (strcmp(cmd, "read") == 0) {
         char *arg = strtok(NULL, " \t\n");
-        readCommand(arg);
-    } 
+        if (arg) {
+            readCommand(*currentDirectory, arg);
+        } else {
+            printf("read: missing operand\n");
+        }
+}
+
     else if (strcmp(cmd, "delete") == 0) {
         char *arg = strtok(NULL, " \t\n");
-        deleteCommand(arg);
+        deleteCommand(*currentDirectory, arg);
     } 
     else if (strcmp(cmd, "rmdir") == 0) {
         char *arg = strtok(NULL, " \t\n");
-        rmdirCommand(arg);
+        rmdirCommand(*currentDirectory, arg);
     } 
     else if (strcmp(cmd, "pwd") == 0) {
-        pwdCommand();
+        pwdCommand(*currentDirectory, *root);
     } 
     else if (strcmp(cmd, "df") == 0) {
-        dfCommand();
+        dfCommand(freeBlockList);
     } 
     else if (strcmp(cmd, "exit") == 0) {
-        exitCommand();
+        exitCommand(*root, freeBlockList);
     } 
     else {
         printf("Invalid command!\n");

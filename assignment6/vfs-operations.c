@@ -9,7 +9,7 @@
 unsigned char virtualDisk[NUMBER_OF_BLOCKS][BLOCK_SIZE];
 int freeBlockOfFile(FileNode *file);
 
-void mkdirCommand(const char *name) {
+void mkdirCommand(FileNode *currentDirectory, const char *name) {
     if (name == NULL) {
         printf("mkdir: missing operand\n");
         return;
@@ -30,7 +30,7 @@ void mkdirCommand(const char *name) {
     printf("Directory '%s' created successfully.\n", name);
 }
 
-void createCommand(const char *name) {
+void createCommand(FileNode *currentDirectory, const char *name) {
     if (name == NULL) {
         printf("create: missing operand\n");
         return;
@@ -48,12 +48,7 @@ void createCommand(const char *name) {
     printf("File '%s' created successfully.\n", name);
 }
 
-void writeCommand(const char *filename, const char *data) {
-    if (!filename) {
-        printf("write: missing operand\n");
-        return;
-    }
-
+void writeCommand(FileNode *currentDirectory, const char *filename, const char *data) {
     if (is_bad_name(filename)) {
         printf("write: invalid filename\n");
         return;
@@ -154,11 +149,7 @@ void writeCommand(const char *filename, const char *data) {
     printf("Data written successfully (size=%d bytes).\n", addBytes);
 }
 
-void readCommand(const char *name) {
-    if (!name) {
-        printf("read: missing operand\n");
-        return;
-    }
+void readCommand(FileNode *currentDirectory, const char *name) {
     FileNode *targetFile = findChild(currentDirectory, name);
     if (!targetFile || targetFile->isDirectory) {
         printf("read: no such file: %s\n", name);
@@ -171,7 +162,8 @@ void readCommand(const char *name) {
     int bytesRead = 0;
     for (int i = 0; i < targetFile->dynamicBlocksCount; ++i) {
         int blockIndex = targetFile->blockPointers[i];
-        int toRead = (targetFile->fileSize - bytesRead < BLOCK_SIZE) ? (targetFile->fileSize - bytesRead) : BLOCK_SIZE;
+        int toRead = (targetFile->fileSize - bytesRead < BLOCK_SIZE) ? 
+                        (targetFile->fileSize - bytesRead) : BLOCK_SIZE;
         fwrite(virtualDisk[blockIndex], 1, toRead, stdout);
         bytesRead += toRead;
         if (bytesRead >= targetFile->fileSize) break;
@@ -179,7 +171,7 @@ void readCommand(const char *name) {
     printf("\n");
 }
 
-void deleteCommand(const char *name) {
+void deleteCommand(FileNode *currentDirectory, const char *name) {
     if (!name) {
         printf("delete: missing operand\n");
         return;
@@ -197,7 +189,7 @@ void deleteCommand(const char *name) {
     printf("File deleted successfully.\n");
 }
 
-void rmdirCommand(const char *name) {
+void rmdirCommand(FileNode *currentDirectory, const char *name) {
     if (!name) {
         printf("rmdir: missing operand\n");
         return;
@@ -214,13 +206,17 @@ void rmdirCommand(const char *name) {
         return;
     }
 
-    unlinkChildNode(currentDirectory, targetDir);
+    int result = unlinkChildNode(currentDirectory, targetDir);
+    if (!result) {
+        printf("rmdir: failed to remove directory '%s'\n", name);
+        return;
+    }
 
-    freeFileSystem(targetDir);
+    freeFileSystem(targetDir, freeBlockList);
     printf("Directory removed successfully.\n");
 }
 
-void lsCommand(void) {
+void lsCommand(FileNode *currentDirectory) {
     if (!currentDirectory->child) {
         printf("(empty)\n");
         return;
@@ -236,33 +232,28 @@ void lsCommand(void) {
     } while (cur != currentDirectory->child);
 }
 
-void cdCommand(const char *name) {
-    if (!name) {
-        printf("cd: missing operand\n");
-        return;
-    }
-
+void cdCommand(FileNode **currentDirectory, const char *name, FileNode *root) {
     if (strcmp(name, "..") == 0) {
-        if (currentDirectory->parent != NULL) {
-            currentDirectory = currentDirectory->parent;
+        if ((*currentDirectory)->parent != NULL) {
+            *currentDirectory = (*currentDirectory)->parent;
         }
-        printf("Moved to %s\n", (currentDirectory == root) ? "/" : currentDirectory->name);
+        printf("Moved to %s\n", (*currentDirectory == root) ? "/" : (*currentDirectory)->name);
         return;
     }
 
-    FileNode *target = findChild(currentDirectory, name);
+    FileNode *target = findChild(*currentDirectory, name);
     if (!target || !target->isDirectory) {
         printf("cd: no such directory: %s\n", name);
         return;
     }
 
-    currentDirectory = target;
-    if (currentDirectory == root) {
+    *currentDirectory = target;
+    if (*currentDirectory == root) {
         printf("Moved to /\n");
     } 
     else {
         char path[MAX_LINE] = "";
-        FileNode *tmp = currentDirectory;
+        FileNode *tmp = *currentDirectory;
         while (tmp && tmp != root) {
             char tmpbuf[MAX_LINE];
             snprintf(tmpbuf, sizeof(tmpbuf), "/%s%s", tmp->name, path);
@@ -274,7 +265,7 @@ void cdCommand(const char *name) {
     }
 }
 
-void pwdCommand(void) {
+void pwdCommand(FileNode *currentDirectory, FileNode *root) {
     if (currentDirectory == root) {
         printf("/\n");
         return;
@@ -292,7 +283,7 @@ void pwdCommand(void) {
     printf("%s\n", path[0] ? path : "/");
 }
 
-void dfCommand(void) {
+void dfCommand(FreeBlockList *freeBlockList) {
     int freeBlocks = countFreeBlocks(freeBlockList);
     int usedBlocks = NUMBER_OF_BLOCKS - freeBlocks;
     double usagePercent = ((double)usedBlocks / NUMBER_OF_BLOCKS) * 100.0;
@@ -302,8 +293,8 @@ void dfCommand(void) {
     printf("Disk Usage: %.2f%%\n", usagePercent);
 }
 
-void exitCommand(void) {
-    freeFileSystem(root);
+void exitCommand(FileNode *root, FreeBlockList *freeBlockList) {
+    freeFileSystem(root, freeBlockList);
     freeFreeBlockList(freeBlockList);
     printf("Memory released. Exiting program...\n");
     exit(0);

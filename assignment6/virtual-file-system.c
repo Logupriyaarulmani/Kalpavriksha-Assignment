@@ -8,8 +8,9 @@
 int main() {
     FileNode *root = NULL;
     FileNode *currentDirectory = NULL;
+    FreeBlockList *freeBlockList = NULL;
 
-    initializeFileSystem();
+    initializeFileSystem(&root, &currentDirectory);
 
     char line[MAX_LINE];
     while (1) {
@@ -17,7 +18,7 @@ int main() {
         if (fgets(line, sizeof(line), stdin) == NULL) {
             break;
         }
-        processCommand(line);
+        processCommand(line, &root, &currentDirectory);
     }
 
     return 0;

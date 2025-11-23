@@ -34,7 +34,7 @@ typedef struct FileNode {
 
 extern FreeBlockList *freeBlockList;
 
-void initializeFreeBlockList(FreeBlockList *list);
+FreeBlockList* initializeFreeBlockList();
 int popFreeBlockHead(FreeBlockList *list);
 void pushFreeBlockTail(FreeBlockList *list, int index);
 int countFreeBlocks(FreeBlockList *list);
