@@ -101,12 +101,14 @@ void extractWriteContent(const char *inputText, char *outputText, int outputSize
 }
 
 void processCommand(char *line, FileNode **root, FileNode **currentDirectory) {
-    if (!line) return;
+    if (!line) 
+        return;
 
     line[strcspn(line, "\r\n")] = '\0';
     char *cmd = strtok(line, " \t\r\n");
 
-    if (!cmd) return;
+    if (!cmd) 
+        return;
 
     if (strcmp(cmd, "mkdir") == 0) {
         char *arg = strtok(NULL, " \t\n");

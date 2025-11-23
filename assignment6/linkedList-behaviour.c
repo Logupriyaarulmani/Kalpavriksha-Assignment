@@ -138,7 +138,8 @@ void insertChild(FileNode *parent, FileNode *newNode) {
 }
 
 FileNode* findChild(FileNode *parent, const char *name) {
-    if (!parent || !parent->child || !name) return NULL;
+    if (!parent || !parent->child || !name) 
+        return NULL;
 
     FileNode *cur = parent->child;
     do {
@@ -175,7 +176,8 @@ int unlinkChildNode(FileNode *parent, FileNode *node) {
 }
 
 void freeFileSystem(FileNode *node, FreeBlockList *list) {
-    if (!node) return;
+    if (!node) 
+        return;
 
     while (node->isDirectory && node->child) {
         FileNode *child = node->child;
