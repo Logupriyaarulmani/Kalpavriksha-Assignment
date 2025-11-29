@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-LRUCache* lruCreate(int capacity) {
-    LRUCache* cache = malloc(sizeof(LRUCache));
+LRUCache* lruCreate(LRUCache* cache, int capacity) {
+    cache = malloc(sizeof(LRUCache));
     cache->capacity = capacity;
     cache->size = 0;
     cache->table = hashMapCreate(capacity);
@@ -16,7 +16,7 @@ LRUCache* lruCreate(int capacity) {
 void lruGet(LRUCache* cache, int key) {
     Node* found = hashMapGet(cache->table, key, cache->capacity);
     if (!found) {
-        printf("NULL\n");
+        printf("Memory allocation failed\n");
         return;
     }
 
@@ -27,7 +27,6 @@ void lruGet(LRUCache* cache, int key) {
 
 void lruPut(LRUCache* cache, int key, char* value) {
     Node* existing = hashMapGet(cache->table, key, cache->capacity);
-
     if (existing) {
         strcpy(existing->value, value);
         queueRemoveNode(cache->queue, existing);
@@ -51,4 +50,13 @@ void lruPut(LRUCache* cache, int key, char* value) {
     hashMapPut(cache->table, newNode, cache->capacity);
     queueInsertRear(cache->queue, newNode);
     cache->size++;
+}
+
+void lrufree (LRUCache* cache) {
+    if (cache == NULL) {
+        return;
+    }
+    freeHashMap(cache->table, cache->capacity);
+    freeQueue(cache->queue);
+    free(cache);
 }

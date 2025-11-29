@@ -8,5 +8,6 @@ int hashMapGetIndex(int key, int capacity);
 Node* hashMapGet(Node** table, int key, int capacity);
 void hashMapPut(Node** table, Node* node, int capacity);
 void hashMapRemove(Node** table, int key, int capacity);
+void freeHashMap(Node** table, int capacity);
 
 #endif

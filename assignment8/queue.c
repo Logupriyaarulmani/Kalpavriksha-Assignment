@@ -15,31 +15,47 @@ void queueInsertRear(Queue* queue, Node* node) {
     node->next = NULL;
     node->prev = queue->rear;
 
-    if (queue->rear)
+    if (queue->rear) {
         queue->rear->next = node;
+    }
 
     queue->rear = node;
 
-    if (queue->front == NULL)
+    if (queue->front == NULL) {
         queue->front = node;
+    }
 }
 
 void queueRemoveNode(Queue* queue, Node* node) {
-    if (node == queue->front)
+    if (node == queue->front) {
         queue->front = node->next;
+    }
 
-    if (node == queue->rear)
+    if (node == queue->rear) {
         queue->rear = node->prev;
+    }
 
-    if (node->prev)
+    if (node->prev) {
         node->prev->next = node->next;
+    }
 
-    if (node->next)
+    if (node->next) {
         node->next->prev = node->prev;
+    }
 
     node->next = node->prev = NULL;
 }
 
 Node* queueGetLRU(Queue* queue) {
     return queue->front;  
+}
+
+void freeQueue(Queue* queue) {
+    Node* current = queue->front;
+    while (current) {
+        Node* temp = current;
+        current = current->next;
+        free(temp);
+    }
+    free(queue);
 }

@@ -24,3 +24,12 @@ void hashMapRemove(Node** table, int key, int capacity) {
     int index = hashMapGetIndex(key, capacity);
     table[index] = NULL;
 }
+
+void freeHashMap(Node** table, int capacity) {
+    for (int i = 0; i < capacity; i++) {
+        if (table[i]) {
+            free(table[i]);
+        }
+    }
+    free(table);
+}

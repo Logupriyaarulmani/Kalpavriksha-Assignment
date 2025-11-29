@@ -21,5 +21,6 @@ bool queueIsEmpty(Queue* queue);
 void queueInsertRear(Queue* queue, Node* node); 
 void queueRemoveNode(Queue* queue, Node* node);
 Node* queueGetLRU(Queue* queue);
+void freeQueue(Queue* queue);
 
 #endif
