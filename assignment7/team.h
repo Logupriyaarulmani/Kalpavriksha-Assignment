@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-int findTeamIndexByName(const char* currTeamName);
+int binarySearchByTeamName (const char* searchName);
 int binarySearchByTeamId (int searchId);
 void reCalcTeamAverage (int teamIndex);
 void insertPlayerIntoTeam (int teamIndex, PlayerNode* currPlayer);
@@ -13,5 +13,8 @@ void displayTeamsByAvgStrikeRate (void);
 char* getStringForRole (int currRole);
 void addNewPlayerToTeam (void);
 void displayTopKPlayers (void);
+
+void mergeSortTeams (Team* arr, int left, int right);
+void mergeTeams (Team* arr, int left, int mid, int right);
 
 #endif

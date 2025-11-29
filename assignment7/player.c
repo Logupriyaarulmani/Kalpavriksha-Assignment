@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "player.h"
-#include "globals.h"
 
 Role mapStringtoRole (const char* currRole)
 {
@@ -94,9 +93,17 @@ void displayAllPlayersByRole ()
         return;
     }
     PlayerNode* currPlayer;
-    if (currRole == 1) currPlayer = globalBatsman;
-    else if (currRole == 2) currPlayer = globalBowler;
-    else if (currRole == 3) currPlayer = globalAllRounder;
+    if (currRole == 1) {
+        currPlayer = globalBatsman;
+    }
+    
+    else if (currRole == 2) {
+        currPlayer = globalBowler;
+    }
+    
+    else if (currRole == 3) {
+        currPlayer = globalAllRounder;
+    }
     printf("\n%s of All Teams: ", getStringFromRole (currRole));
     printf("\n======================================================================================");
     printf("\nID    Name                    Role         Runs  Avg    SR   Wkts   ER   Perf. Index");

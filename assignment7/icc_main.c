@@ -22,11 +22,9 @@ int main (void)
             break;
         case 2:
             printf("\nEnter Team ID: ");
-            {
-                int searchTeamId;
-                scanf("%d", &searchTeamId);
-                displayTeamPlayersById (searchTeamId);
-            }
+            int searchTeamId;
+            scanf("%d", &searchTeamId);
+            displayTeamPlayersById (searchTeamId);
             break;
         case 3:
             displayTeamsByAvgStrikeRate ();
