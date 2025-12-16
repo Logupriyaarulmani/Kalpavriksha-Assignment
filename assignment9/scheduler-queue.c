@@ -38,3 +38,10 @@ int dequeue(Queue *queue) {
 bool isQueueEmpty(Queue *queue) {
     return queue->front == NULL;
 }
+
+void freeQueue(Queue *queue) {
+    while (!isQueueEmpty(queue)) {
+        dequeue(queue);
+    }
+    queue->front = queue->rear = NULL;
+}

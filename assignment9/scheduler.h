@@ -1,14 +1,12 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <stdbool.h>
+
 #define MAX_LEN 100
 
 typedef enum {
-    READY,
-    RUNNING,
-    WAITING,
-    TERMINATED,
-    KILLED
+    READY, RUNNING, WAITING, TERMINATED, KILLED
 } ProcessState;
 
 typedef struct PCB {
@@ -22,6 +20,7 @@ typedef struct PCB {
     int turnaroundTime;
     int waitingTime;
     int killTime;
+    int arrivalTime;
     ProcessState state;
 } PCB;
 
@@ -36,6 +35,7 @@ typedef struct Queue {
 } Queue;
 
 typedef struct KillEvent {
+    char command[MAX_LEN];
     int pid;
     int killTime;
 } KillEvent;
@@ -44,5 +44,6 @@ void initQueue(Queue *queue);
 void enqueue(Queue *queue, int pid);
 int dequeue(Queue *queue);
 bool isQueueEmpty(Queue *queue);
+void freeQueue(Queue *queue);
 
 #endif

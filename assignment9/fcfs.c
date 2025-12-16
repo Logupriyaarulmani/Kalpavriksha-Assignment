@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "scheduler.h"
 
 static int processCount = 0;
@@ -22,34 +21,27 @@ PCB* getPcb(int pid) {
     return &pcbTable[pid % 100];
 }
 
-void enqueueProcess(Queue* queue, PCB* process) {
-    enqueue(queue, process->pid);
-}
-
-PCB* dequeueProcess(Queue* queue) {
-    int pid = dequeue(queue);
-    if (pid == -1) return NULL;
-    return getPcb(pid);
-}
-
 void removeProcessFromQueue(Queue* queue, int pid) {
     Queue tempQueue;
     initQueue(&tempQueue);
 
-    int removed = 0;
-
     while (!isQueueEmpty(queue)) {
         int currentPid = dequeue(queue);
-        if (currentPid == pid) {
-            removed = 1;
-            continue;
+        if (currentPid != pid) {
+            enqueue(&tempQueue, currentPid);
         }
-        enqueue(&tempQueue, currentPid);
     }
 
     while (!isQueueEmpty(&tempQueue)) {
         enqueue(queue, dequeue(&tempQueue));
     }
+    freeQueue(&tempQueue);
+}
+
+void freeAllQueues() {
+    freeQueue(&readyQueue);
+    freeQueue(&waitingQueue);
+    freeQueue(&terminatedQueue);
 }
 
 void loadProcessData() {
@@ -60,22 +52,23 @@ void loadProcessData() {
         char name[MAX_LEN];
         int pid, burst, ioStart, ioDur;
 
-        scanf("%s", name);
-        scanf("%d %d %d %d", &pid, &burst, &ioStart, &ioDur);
+        scanf("%s %d %d %d %d", name, &pid, &burst, &ioStart, &ioDur);
 
         PCB* pcb = getPcb(pid);
         strcpy(pcb->processName, name);
         pcb->pid = pid;
         pcb->cpuBurst = burst;
-        pcb->remainingIo = ioDur;
-        pcb->executedCpu = 0;
         pcb->ioStartTime = ioStart;
         pcb->ioDuration = ioDur;
+        pcb->executedCpu = 0;
+        pcb->remainingIo = ioDur;
         pcb->turnaroundTime = 0;
         pcb->waitingTime = 0;
+        pcb->killTime = 0;
         pcb->state = READY;
+        pcb->arrivalTime = 0;
 
-        enqueueProcess(&readyQueue, pcb);
+        enqueue(&readyQueue, pid);
     }
 }
 
@@ -84,82 +77,55 @@ void loadKillEvents() {
     scanf("%d", &killEventCount);
 
     for (int i = 0; i < killEventCount; i++) {
-        char tmp[10];
-        int pid, timestamp;
-
-        scanf("%s", tmp);
-        scanf("%d %d", &pid, &timestamp);
-
-        killTable[i].pid = pid;
-        killTable[i].killTime = timestamp;
+        scanf("%s %d %d", killTable[i].command, &killTable[i].pid, &killTable[i].killTime);
     }
 }
 
 void processKillEvents() {
     for (int i = 0; i < killEventCount; i++) {
-        if (killTable[i].killTime != currentTime) continue;
-
-        PCB* target = getPcb(killTable[i].pid);
-
-        target->waitingTime = 0;
-        target->turnaroundTime = 0;
-
-        int killTime;
-        target->killTime = killTable[i].killTime;
-
-        target->ioStartTime = killTable[i].killTime;
-
-        if (target == runningProcess) {
+        if (killTable[i].killTime == currentTime) {
+            PCB* target = getPcb(killTable[i].pid);
+            
+            target->killTime = currentTime;
+            target->turnaroundTime = 0;
+            target->waitingTime = 0;
             target->state = KILLED;
-            enqueueProcess(&terminatedQueue, target);
-            runningProcess = NULL;
-            terminatedCount++;
-            continue;
-        }
 
-        if (target->state == READY) {
+            if (target == runningProcess) {
+                runningProcess = NULL;
+            }
+            
             removeProcessFromQueue(&readyQueue, target->pid);
-            target->state = KILLED;
-            enqueueProcess(&terminatedQueue, target);
-            terminatedCount++;
-            continue;
-        }
-
-        if (target->state == WAITING) {
             removeProcessFromQueue(&waitingQueue, target->pid);
-            target->state = KILLED;
-            enqueueProcess(&terminatedQueue, target);
+            
+            enqueue(&terminatedQueue, target->pid);
             terminatedCount++;
-            continue;
         }
     }
 }
 
 void runCpuCycle() {
-    if (runningProcess == NULL) {
-        if (!isQueueEmpty(&readyQueue)) {
-            runningProcess = dequeueProcess(&readyQueue);
-            runningProcess->state = RUNNING;
-        }
+    if (runningProcess == NULL && !isQueueEmpty(&readyQueue)) {
+        runningProcess = getPcb(dequeue(&readyQueue));
+        runningProcess->state = RUNNING;
     }
 
     if (runningProcess == NULL) return;
 
     runningProcess->executedCpu++;
 
-    if (runningProcess->executedCpu == runningProcess->ioStartTime &&
-        runningProcess->remainingIo > 0) {
-
+    if (runningProcess->executedCpu == runningProcess->ioStartTime && 
+        runningProcess->ioDuration > 0) {
         runningProcess->state = WAITING;
-        enqueueProcess(&waitingQueue, runningProcess);
+        enqueue(&waitingQueue, runningProcess->pid);
         runningProcess = NULL;
         return;
     }
 
     if (runningProcess->executedCpu == runningProcess->cpuBurst) {
         runningProcess->state = TERMINATED;
-        runningProcess->turnaroundTime = currentTime + 1;
-        enqueueProcess(&terminatedQueue, runningProcess);
+        runningProcess->turnaroundTime = currentTime + 1 - runningProcess->arrivalTime;
+        enqueue(&terminatedQueue, runningProcess->pid);
         runningProcess = NULL;
         terminatedCount++;
     }
@@ -170,34 +136,40 @@ void runIoCycle() {
     initQueue(&tempQueue);
 
     while (!isQueueEmpty(&waitingQueue)) {
-        PCB* p = dequeueProcess(&waitingQueue);
+        int pid = dequeue(&waitingQueue);
+        PCB* p = getPcb(pid);
         p->remainingIo--;
 
-        if (p->remainingIo == 0) {
+        if (p->remainingIo <= 0) {
             p->state = READY;
-            enqueueProcess(&readyQueue, p);
+            enqueue(&readyQueue, pid);
         } else {
-            enqueueProcess(&tempQueue, p);
+            enqueue(&tempQueue, pid);
         }
     }
 
     while (!isQueueEmpty(&tempQueue)) {
-        enqueueProcess(&waitingQueue, dequeueProcess(&tempQueue));
+        enqueue(&waitingQueue, dequeue(&tempQueue));
     }
+    freeQueue(&tempQueue);
 }
 
 void trackWaitingTime() {
-    Queue tempQueue;
-    initQueue(&tempQueue);
+    if (runningProcess == NULL && !isQueueEmpty(&readyQueue)) {
+        Queue tempQueue;
+        initQueue(&tempQueue);
 
-    while (!isQueueEmpty(&readyQueue)) {
-        PCB* p = dequeueProcess(&readyQueue);
-        p->waitingTime++;
-        enqueueProcess(&tempQueue, p);
-    }
+        while (!isQueueEmpty(&readyQueue)) {
+            int pid = dequeue(&readyQueue);
+            PCB* p = getPcb(pid);
+            p->waitingTime++;
+            enqueue(&tempQueue, pid);
+        }
 
-    while (!isQueueEmpty(&tempQueue)) {
-        enqueueProcess(&readyQueue, dequeueProcess(&tempQueue));
+        while (!isQueueEmpty(&tempQueue)) {
+            enqueue(&readyQueue, dequeue(&tempQueue));
+        }
+        freeQueue(&tempQueue);
     }
 }
 
@@ -208,7 +180,8 @@ void printResults() {
     initQueue(&tempQueue);
 
     while (!isQueueEmpty(&terminatedQueue)) {
-        PCB* p = dequeueProcess(&terminatedQueue);
+        int pid = dequeue(&terminatedQueue);
+        PCB* p = getPcb(pid);
 
         char status[32];
         if (p->state == KILLED) {
@@ -218,20 +191,16 @@ void printResults() {
         }
 
         printf("%-4d %-10s %-4d %-4d %-12s %-11d %d\n",
-               p->pid,
-               p->processName,
-               p->cpuBurst,
-               p->ioDuration,
-               status,
-               p->turnaroundTime,
-               p->waitingTime);
+               p->pid, p->processName, p->cpuBurst, p->ioDuration,
+               status, p->turnaroundTime, p->waitingTime);
 
-        enqueueProcess(&tempQueue, p);
+        enqueue(&tempQueue, pid);
     }
 
     while (!isQueueEmpty(&tempQueue)) {
-        enqueueProcess(&terminatedQueue, dequeueProcess(&tempQueue));
+        enqueue(&terminatedQueue, dequeue(&tempQueue));
     }
+    freeQueue(&tempQueue);
 }
 
 int main() {
@@ -251,5 +220,6 @@ int main() {
     }
 
     printResults();
+    freeAllQueues();
     return 0;
 }
