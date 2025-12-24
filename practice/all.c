@@ -192,104 +192,138 @@
 //     }
 // }
 
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 
-void enqueue(int arr[], int *front, int *rear, int size, int value) {
-    if ((*rear + 1) % size == *front) {
-        printf("queue is full\n");
-        return;
-    }
+// void enqueue(int arr[], int *front, int *rear, int size, int value) {
+//     if ((*rear + 1) % size == *front) {
+//         printf("queue is full\n");
+//         return;
+//     }
 
-    if (*front == -1 && *rear == -1) {
-        (*front) = 0;
-        (*rear) = 0;
-        arr[*rear] = value;
-    } 
-    else {
-        (*rear) = (*rear + 1) % size;
-        arr[*rear] = value;
-    }
-}
+//     if (*front == -1 && *rear == -1) {
+//         (*front) = 0;
+//         (*rear) = 0;
+//         arr[*rear] = value;
+//     } 
+//     else {
+//         (*rear) = (*rear + 1) % size;
+//         arr[*rear] = value;
+//     }
+// }
 
-void dequeue(int arr[], int *front, int *rear, int size) {
-    if (*front == -1 && *rear == -1) {
-        printf("queue is empty\n");
-        return -1;
-    }
-    if (*front == *rear) {
-        *front = -1;
-        *rear = -1;
-    }
-    else{
-        *front = (*front + 1) % size;
-    }
-    return arr[*front];
-}
+// void dequeue(int arr[], int *front, int *rear, int size) {
+//     if (*front == -1 && *rear == -1) {
+//         printf("queue is empty\n");
+//         return -1;
+//     }
+//     if (*front == *rear) {
+//         *front = -1;
+//         *rear = -1;
+//     }
+//     else{
+//         *front = (*front + 1) % size;
+//     }
+//     return arr[*front];
+// }
 
-void display(int arr[], int *front, int *rear) {
-    if (*front == -1 && *rear == -1) {
-        printf("queue is empty\n");
-        return;
-    }
-    else {
-        for (int i = *front; i <= *rear; i++) {
-            printf("%d ",arr[i]);
-        }
-    }
-}
+// void display(int arr[], int *front, int *rear) {
+//     if (*front == -1 && *rear == -1) {
+//         printf("queue is empty\n");
+//         return;
+//     }
+//     else {
+//         for (int i = *front; i <= *rear; i++) {
+//             printf("%d ",arr[i]);
+//         }
+//     }
+// }
 
-void peek(int arr[], int *front, int *rear) {
-    if (*front == -1 && *rear == -1){
-        printf("the queue is empty\n");
-        return;
-    }
-    printf("%d\n", arr[*front]);
-}
+// int peek(int arr[], int *front, int *rear) {
+//     if (*front == -1 && *rear == -1){
+//         printf("the queue is empty\n");
+//         return -1;
+//     }
+//     return arr[*front];
+// }
 
-int* reverseQueue(int *queue, int *front, int *rear,int size) {
-    int *stack = (int *)malloc(size * sizeof(int));
-    int top = -1;
+// int* reverseQueue(int *queue, int *front, int *rear,int size) {
+//     int *stack = (int *)malloc(size * sizeof(int));
+//     int top = -1;
 
-    if (*front == -1) {
-        free(stack);
-        return queue;
-    }
-    while (*front <= *rear) {
-        stack[++top] = peek(queue, front, rear);
-        dequeue(queue, front, rear, size);
-    }
-    *front = -1;
-    *rear = -1;
+//     int count;
 
-    while (top >= 0) {
-        enqueue(queue, front, rear, size, stack[top--]);
-    }
-    free(stack);
-    return queue;
-}
+//     if (*rear >= *front) {
+//         count = *rear - *front + 1;
+//     } else {
+//         count = size - *front + *rear + 1;
+//     }
 
-int main() {
-    int size;
-    scanf("%d",&size);
-    int *queue = (int *)malloc(size * sizeof(int));
+//     for (int i = 0;  i <count; i++){
+//         stack[++top] = peek(queue, front, rear);
+//         dequeue(queue, front, rear, size);
+//     }
+    
+//     for (int i = 0;  i <count; i++){
+//         enqueue(queue, front, rear, size, stack[top--]);
+//     }
+//     free(stack);
+//     return queue;
+// }
 
-    int front = -1;
-    int rear = -1;
+// int* reverseFirstK(int *queue, int *front, int *rear, int size, int k) {
+//     int count;
+//     int *stack = (int *) malloc (size * sizeof(int));
+//     int top = -1;
+//     if (*rear >= *front) {
+//         count = *rear - *front + 1;
+//     } else {
+//         count = size - *front + *rear + 1;
+//     }
+    
+//     if (count < k || k <= 0) {
+//         printf("\n enter a valid number\n");
+//         return queue;
+//     }
+//     else {
+//         for (int i = 0; i < k; i++) {
+//             stack[++top] = peek (queue, front, rear);
+//             dequeue (queue, front, rear, size);
+//         }
+//         for (int i = 0; i < k; i++) {
+//             enqueue(queue, front, rear, size, stack[top--]);
+//         }
+//         for (int i = 0; i < count - k; i++) {
+//             enqueue(queue, front, rear, size, peek(queue, front, rear));
+//             dequeue(queue, front, rear, size);
+//         }
+//     }
+//     free(stack);
+//     return queue;
+// }
 
-    enqueue(queue, &front, &rear, size, 10);
-    enqueue(queue, &front, &rear, size, 20);
-    enqueue(queue, &front, &rear, size, 30);
+// int main() {
+//     int size;
+//     scanf("%d",&size);
+//     int *queue = (int *)malloc(size * sizeof(int));
 
-    display(queue, &front, &rear);
+//     int front = -1;
+//     int rear = -1;
 
-    peek(queue, &front, &rear);
+//     enqueue(queue, &front, &rear, size, 10);
+//     enqueue(queue, &front, &rear, size, 20);
+//     enqueue(queue, &front, &rear, size, 30);
 
-    dequeue(queue, &front, &rear, size);
-    dequeue(queue, &front, &rear, size);
+//     display(queue, &front, &rear);
 
-    display(queue, &front, &rear);
+//     peek(queue, &front, &rear);
 
-    free(queue);
-    return 0;
-}
+//     dequeue(queue, &front, &rear, size);
+//     dequeue(queue, &front, &rear, size);
+
+//     display(queue, &front, &rear);
+
+//     free(queue);
+//     return 0;
+// }
+
